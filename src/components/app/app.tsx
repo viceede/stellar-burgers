@@ -1,3 +1,10 @@
+import {
+  fetchIngredients,
+  selectIngredients,
+  selectIngredientsError,
+  selectIngredientsLoading,
+} from '@/services/slices/ingredientsSlice';
+import { useDispatch, useSelector } from '@/services/store';
 import { AppHeader, IngredientDetails, Modal, OrderInfo } from '@components';
 import {
   ConstructorPage,
@@ -11,6 +18,7 @@ import {
   ResetPassword,
 } from '@pages';
 import { Preloader } from '@ui';
+import { useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 
 import type { AppContentProps } from './type';
@@ -21,9 +29,17 @@ import '../../index.css';
 import styles from './app.module.css';
 
 const App = (): React.JSX.Element => {
-  const ingredients: TIngredient[] = [];
-  const isIngredientsLoading = false;
-  const ingredientsError = null;
+  const dispatch = useDispatch();
+
+  const ingredients: TIngredient[] = useSelector(selectIngredients);
+  const isIngredientsLoading = useSelector(selectIngredientsLoading);
+  const ingredientsError = useSelector(selectIngredientsError);
+
+  useEffect(() => {
+    dispatch(fetchIngredients()).catch((err) => {
+      console.error('Не удалось найти ингредиенты: ', err);
+    });
+  }, [dispatch]);
 
   return (
     <div className={styles.app}>
@@ -71,12 +87,30 @@ const AppContent = ({
 const RouteComponent = (): React.JSX.Element => {
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state as { backgroundLocation?: Location } | null;
-  const backgroundLocation = state?.backgroundLocation;
+  const state = location.state as { background?: Location };
+  const backgroundLocation = state?.background;
 
   const handleModalClick = (): void => {
     void navigate(-1);
   };
+
+  const orderInfoElement: React.ReactElement = (
+    <div>
+      <h2 className={`${styles.detailHeader} text text_type_main-large`}>
+        Информация о заказе
+      </h2>
+      <OrderInfo />
+    </div>
+  );
+
+  const ingredientDetailsElement: React.ReactElement = (
+    <div className={styles.detailPageWrap}>
+      <h2 className={`${styles.detailHeader} text text_type_main-large`}>
+        Детали ингредиента
+      </h2>
+      <IngredientDetails />
+    </div>
+  );
 
   return (
     <>
@@ -84,7 +118,6 @@ const RouteComponent = (): React.JSX.Element => {
         {/* Открытые маршруты */}
         <Route path="/" element={<ConstructorPage />} />
         <Route path="/feed" element={<Feed />} />
-        <Route path="*" element={<NotFound404 />} />
         {/* Защищенные маршруты */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -92,6 +125,12 @@ const RouteComponent = (): React.JSX.Element => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/orders" element={<ProfileOrders />} />
+        {/* Полноэкранные версии модалок */}
+        <Route path="/feed/:number" element={orderInfoElement} />
+        <Route path="/ingredients/:id" element={ingredientDetailsElement} />
+        <Route path="/profile/orders/:number" element={orderInfoElement} />
+        {/* Страница не найдена */}
+        <Route path="*" element={<NotFound404 />} />
       </Routes>
 
       {/* Модалки */}
@@ -108,7 +147,7 @@ const RouteComponent = (): React.JSX.Element => {
           <Route
             path="/ingredients/:id"
             element={
-              <Modal title="Ингредиент" onClose={handleModalClick}>
+              <Modal title="Детали ингредиента" onClose={handleModalClick}>
                 <IngredientDetails />
               </Modal>
             }
