@@ -11,7 +11,6 @@ export const BurgerIngredients = (): React.JSX.Element => {
   const titleBunRef = useRef<HTMLHeadingElement>(null);
   const titleMainRef = useRef<HTMLHeadingElement>(null);
   const titleSaucesRef = useRef<HTMLHeadingElement>(null);
-  // TODO: Взять ингредиенты из стора
   const ingredients: TIngredient[] = useSelector(selectIngredients);
 
   const [bunsRef, inViewBuns] = useInView({
