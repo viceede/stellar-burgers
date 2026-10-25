@@ -1,7 +1,17 @@
-import { AppHeader } from '@components';
-import { ConstructorPage } from '@pages';
+import { AppHeader, IngredientDetails, Modal, OrderInfo } from '@components';
+import {
+  ConstructorPage,
+  Feed,
+  ForgotPassword,
+  Login,
+  NotFound404,
+  Profile,
+  ProfileOrders,
+  Register,
+  ResetPassword,
+} from '@pages';
 import { Preloader } from '@ui';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 
 import type { AppContentProps } from './type';
 import type { TIngredient } from '@utils-types';
@@ -59,11 +69,60 @@ const AppContent = ({
 };
 
 const RouteComponent = (): React.JSX.Element => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as { backgroundLocation?: Location } | null;
+  const backgroundLocation = state?.backgroundLocation;
+
+  const handleModalClick = (): void => {
+    void navigate(-1);
+  };
+
   return (
     <>
-      <Routes>
+      <Routes location={backgroundLocation ?? location}>
+        {/* Открытые маршруты */}
         <Route path="/" element={<ConstructorPage />} />
+        <Route path="/feed" element={<Feed />} />
+        <Route path="*" element={<NotFound404 />} />
+        {/* Защищенные маршруты */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/orders" element={<ProfileOrders />} />
       </Routes>
+
+      {/* Модалки */}
+      {backgroundLocation && (
+        <Routes>
+          <Route
+            path="/feed/:number"
+            element={
+              <Modal title="Информация о заказе" onClose={handleModalClick}>
+                <OrderInfo />
+              </Modal>
+            }
+          />
+          <Route
+            path="/ingredients/:id"
+            element={
+              <Modal title="Ингредиент" onClose={handleModalClick}>
+                <IngredientDetails />
+              </Modal>
+            }
+          />
+          <Route
+            path="/profile/orders/:number"
+            element={
+              <Modal title="Информация о заказе" onClose={handleModalClick}>
+                <OrderInfo />
+              </Modal>
+            }
+          />
+        </Routes>
+      )}
     </>
   );
 };
