@@ -45,6 +45,12 @@ export type TOrdersData = {
   totalToday: number;
 };
 
+export type TOrdersState = {
+  orders: TOrder[];
+  isLoading: boolean;
+  error: string | null;
+};
+
 export type TUser = {
   email: string;
   name: string;
