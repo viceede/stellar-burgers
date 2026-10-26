@@ -51,6 +51,13 @@ export type TOrdersState = {
   error: string | null;
 };
 
+export type TNewOrderState = {
+  order: TOrder | null;
+  name: string | null;
+  isLoading: boolean;
+  error: string | null;
+};
+
 export type TOrderDetailsState = {
   order: TOrder | null;
   isLoading: boolean;
