@@ -4,6 +4,7 @@ import {
   selectIngredientsError,
   selectIngredientsLoading,
 } from '@/services/slices/ingredientsSlice';
+import { getUser } from '@/services/slices/userSlice';
 import { useDispatch, useSelector } from '@/services/store';
 import { AppHeader, IngredientDetails, Modal, OrderInfo } from '@components';
 import {
@@ -40,6 +41,12 @@ const App = (): React.JSX.Element => {
   useEffect(() => {
     dispatch(fetchIngredients()).catch((err) => {
       console.error('Не удалось найти ингредиенты: ', err);
+    });
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(getUser()).catch((error) => {
+      console.error('Не удалось найти пользователя: ', error);
     });
   }, [dispatch]);
 

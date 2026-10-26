@@ -112,10 +112,11 @@ const userSlice = createSlice({
         state.user = action.payload;
         state.isAuthChecked = true;
       })
-      .addCase(getUser.rejected, (state) => {
+      .addCase(getUser.rejected, (state, action) => {
         state.isLoading = false;
         state.user = null;
         state.isAuthChecked = true;
+        state.error = action.error.message ?? 'Не удалось проверить авторизацию';
       })
 
       .addCase(updateUser.pending, (state) => {
