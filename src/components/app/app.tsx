@@ -21,6 +21,8 @@ import { Preloader } from '@ui';
 import { useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 
+import { ProtectedRoute } from '../common/protectedRoute';
+
 import type { AppContentProps } from './type';
 import type { TIngredient } from '@utils-types';
 
@@ -118,17 +120,26 @@ const RouteComponent = (): React.JSX.Element => {
         {/* Открытые маршруты */}
         <Route path="/" element={<ConstructorPage />} />
         <Route path="/feed" element={<Feed />} />
+
         {/* Защищенные маршруты */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/profile/orders" element={<ProfileOrders />} />
+        <Route element={<ProtectedRoute onlyUnAuth />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+        </Route>
+        <Route element={<ProtectedRoute />}>
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/orders" element={<ProfileOrders />} />
+        </Route>
+
         {/* Полноэкранные версии модалок */}
         <Route path="/feed/:number" element={orderInfoElement} />
         <Route path="/ingredients/:id" element={ingredientDetailsElement} />
-        <Route path="/profile/orders/:number" element={orderInfoElement} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/profile/orders/:number" element={orderInfoElement} />
+        </Route>
+
         {/* Страница не найдена */}
         <Route path="*" element={<NotFound404 />} />
       </Routes>
