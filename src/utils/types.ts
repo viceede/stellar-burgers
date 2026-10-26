@@ -14,6 +14,12 @@ export type TIngredient = {
   image_mobile: string;
 };
 
+export type TIngredientsState = {
+  ingredients: TIngredient[];
+  isLoading: boolean;
+  error: SerializedError | null;
+};
+
 export type TConstructorIngredient = TIngredient & {
   id: string;
 };
@@ -44,17 +50,18 @@ export type TUser = {
   name: string;
 };
 
+export type TUserState = {
+  user: TUser | null;
+  isAuthChecked: boolean;
+  isLoading: boolean;
+  error: string | null;
+};
+
 export type TTabMode = 'bun' | 'sauce' | 'main';
 
 export type TConstructorState = {
   bun: TConstructorIngredient | null;
   ingredients: TConstructorIngredient[];
-};
-
-export type TIngredientsState = {
-  ingredients: TIngredient[];
-  isLoading: boolean;
-  error: SerializedError | null;
 };
 
 export type TFeedState = {
