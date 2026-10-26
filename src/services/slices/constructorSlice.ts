@@ -64,6 +64,10 @@ const constructorSlice = createSlice({
         (ingredient) => ingredient.id !== action.payload
       );
     },
+    removeAllItems: (state) => {
+      state.ingredients = [];
+      state.bun = null;
+    },
     moveItem: (state, action: PayloadAction<TMoveIngredientPayload>) => {
       const { id, direction } = action.payload;
 
@@ -76,6 +80,7 @@ const constructorSlice = createSlice({
   },
 });
 
-export const { addItem, removeItem, moveItem } = constructorSlice.actions;
+export const { addItem, removeItem, removeAllItems, moveItem } =
+  constructorSlice.actions;
 export const { selectItems, selectBun } = constructorSlice.selectors;
 export default constructorSlice.reducer;

@@ -21,6 +21,8 @@ export type TIngredientsState = {
   error: SerializedError | null;
 };
 
+export type TIngredientsWithCount = Record<string, TIngredient & { count: number }>;
+
 export type TConstructorIngredient = TIngredient & {
   id: string;
 };

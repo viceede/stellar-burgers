@@ -4,6 +4,7 @@ import constructorReducer from './slices/constructorSlice';
 import feedReducer from './slices/feedSlice';
 import ingredientsReducer from './slices/ingredientsSlice';
 import orderDetailsReducer from './slices/orderDetailsSlice';
+import orderReducer from './slices/orderSlice';
 import ordersReducer from './slices/ordersSlice';
 import userReducer from './slices/userSlice';
 
@@ -14,5 +15,5 @@ export const rootReducer = combineReducers({
   feed: feedReducer,
   orders: ordersReducer,
   orderDetails: orderDetailsReducer,
-  order: ordersReducer,
+  order: orderReducer,
 });
