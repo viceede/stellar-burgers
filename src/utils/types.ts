@@ -1,4 +1,5 @@
 import type { SerializedError } from '@reduxjs/toolkit';
+import type { ReactNode } from 'react';
 
 export type TIngredient = {
   _id: string;
@@ -89,4 +90,9 @@ export type TFeedState = {
   totalToday: number;
   isLoading: boolean;
   error: unknown;
+};
+
+export type TProtectedRouteProps = {
+  onlyUnAuth?: boolean;
+  children?: ReactNode;
 };
