@@ -74,11 +74,10 @@ export const Profile = (): React.JSX.Element => {
       return;
     }
 
-    try {
-      await dispatch(updateUser(updatedData)).unwrap();
+    const result = await dispatch(updateUser(updatedData));
+
+    if (updateUser.fulfilled.match(result)) {
       clearPassword();
-    } catch {
-      // Ошибка запроса отображается через updateUserError.
     }
   };
 
