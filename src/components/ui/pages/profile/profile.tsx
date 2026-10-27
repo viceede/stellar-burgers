@@ -1,22 +1,9 @@
 import { ProfileMenu } from '@/components/profile-menu';
 import { Button, Input } from '@krgaa/react-developer-burger-ui-components';
 
-import type { TProfileFormErrors, TProfileFormValues } from '@/utils/profileValidation';
-import type { FormEvent } from 'react';
+import type { TProfileUIProps } from './type';
 
 import styles from './profile.module.css';
-
-type TProfileUIProps = {
-  formValue: TProfileFormValues;
-  errors: TProfileFormErrors;
-  updateUserError: string | null;
-  isLoading: boolean;
-  isFormChanged: boolean;
-  onChange: (field: keyof TProfileFormValues, value: string) => void;
-  onBlur: (field: keyof TProfileFormValues) => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
-  onCancel: () => void;
-};
 
 export const ProfileUI = ({
   formValue,

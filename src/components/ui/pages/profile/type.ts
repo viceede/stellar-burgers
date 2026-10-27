@@ -1,14 +1,14 @@
-import type { ChangeEvent, SyntheticEvent } from 'react';
+import type { TProfileFormErrors, TProfileFormValues } from '@/utils/profileValidation';
+import type { FormEvent } from 'react';
 
-export type ProfileUIProps = {
-  formValue: {
-    name: string;
-    email: string;
-    password: string;
-  };
+export type TProfileUIProps = {
+  formValue: TProfileFormValues;
+  errors: TProfileFormErrors;
+  updateUserError: string | null;
+  isLoading: boolean;
   isFormChanged: boolean;
-  handleSubmit: (e: SyntheticEvent) => void;
-  handleCancel: (e: SyntheticEvent) => void;
-  handleInputChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  updateUserError?: string;
+  onChange: (field: keyof TProfileFormValues, value: string) => void;
+  onBlur: (field: keyof TProfileFormValues) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onCancel: () => void;
 };
