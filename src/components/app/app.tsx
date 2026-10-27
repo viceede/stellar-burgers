@@ -39,15 +39,11 @@ const App = (): React.JSX.Element => {
   const ingredientsError = useSelector(selectIngredientsError);
 
   useEffect(() => {
-    dispatch(fetchIngredients()).catch((err) => {
-      console.error('Не удалось найти ингредиенты: ', err);
-    });
+    void dispatch(fetchIngredients());
   }, [dispatch]);
 
   useEffect(() => {
-    dispatch(getUser()).catch((error) => {
-      console.error('Не удалось найти пользователя: ', error);
-    });
+    void dispatch(getUser());
   }, [dispatch]);
 
   return (
@@ -133,9 +129,9 @@ const RouteComponent = (): React.JSX.Element => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Route>
         <Route element={<ProtectedRoute />}>
-          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/profile/orders" element={<ProfileOrders />} />
         </Route>
