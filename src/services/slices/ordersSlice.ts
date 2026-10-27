@@ -9,7 +9,7 @@ const initialState: TOrdersState = {
   error: null,
 };
 
-const getOrders = createAsyncThunk(
+export const getOrders = createAsyncThunk(
   'orders/getOrders',
   async (_, { rejectWithValue }) => {
     try {
