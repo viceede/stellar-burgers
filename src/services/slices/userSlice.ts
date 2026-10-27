@@ -4,12 +4,13 @@ import {
   logoutApi,
   registerUserApi,
   updateUserApi,
+  refreshToken,
 } from '@/utils/burger-api';
-import { deleteCookie, setCookie } from '@/utils/cookie';
+import { deleteCookie, getCookie, setCookie } from '@/utils/cookie';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 import type { TLoginData, TRegisterData } from '@/utils/burger-api';
-import type { TUserState } from '@/utils/types';
+import type { TUser, TUserState } from '@/utils/types';
 
 const initialState: TUserState = {
   user: null,
@@ -39,7 +40,18 @@ export const loginUser = createAsyncThunk('user/login', async (data: TLoginData)
   return response.user;
 });
 
-export const getUser = createAsyncThunk('user/getUser', async () => {
+export const getUser = createAsyncThunk<TUser | null>('user/getUser', async () => {
+  const accessToken = getCookie('accessToken');
+  const refreshTokenValue = localStorage.getItem('refreshToken');
+
+  if (!accessToken && !refreshTokenValue) {
+    return null;
+  }
+
+  if (!accessToken && refreshTokenValue) {
+    await refreshToken();
+  }
+
   const response = await getUserApi();
   return response.user;
 });
