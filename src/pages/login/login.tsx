@@ -2,7 +2,6 @@ import { clearUserError, loginUser, selectUserError } from '@/services/slices/us
 import { useDispatch, useSelector } from '@/services/store';
 import { LoginUI } from '@ui-pages';
 import { type SyntheticEvent, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 export const Login = (): React.JSX.Element => {
   const [email, setEmail] = useState('');
@@ -11,7 +10,6 @@ export const Login = (): React.JSX.Element => {
   const errorText = useSelector(selectUserError) ?? undefined;
 
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(clearUserError());
@@ -27,8 +25,6 @@ export const Login = (): React.JSX.Element => {
     const login = async (): Promise<void> => {
       try {
         await dispatch(loginUser(data)).unwrap();
-
-        void navigate('/', { replace: true });
       } catch (error) {
         console.error('Не удалось войти в аккаунт: ', error);
       }
