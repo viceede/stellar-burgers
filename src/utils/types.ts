@@ -1,3 +1,6 @@
+import type { SerializedError } from '@reduxjs/toolkit';
+import type { ReactNode } from 'react';
+
 export type TIngredient = {
   _id: string;
   name: string;
@@ -12,8 +15,21 @@ export type TIngredient = {
   image_mobile: string;
 };
 
+export type TIngredientsState = {
+  ingredients: TIngredient[];
+  isLoading: boolean;
+  error: SerializedError | null;
+};
+
+export type TIngredientsWithCount = Record<string, TIngredient & { count: number }>;
+
 export type TConstructorIngredient = TIngredient & {
   id: string;
+};
+
+export type TMoveIngredientPayload = {
+  id: TConstructorIngredient['id'];
+  direction: 'up' | 'down';
 };
 
 export type TOrder = {
@@ -32,9 +48,35 @@ export type TOrdersData = {
   totalToday: number;
 };
 
+export type TOrdersState = {
+  orders: TOrder[];
+  isLoading: boolean;
+  error: string | null;
+};
+
+export type TNewOrderState = {
+  order: TOrder | null;
+  name: string | null;
+  isLoading: boolean;
+  error: string | null;
+};
+
+export type TOrderDetailsState = {
+  order: TOrder | null;
+  isLoading: boolean;
+  error: string | null;
+};
+
 export type TUser = {
   email: string;
   name: string;
+};
+
+export type TUserState = {
+  user: TUser | null;
+  isAuthChecked: boolean;
+  isLoading: boolean;
+  error: string | null;
 };
 
 export type TTabMode = 'bun' | 'sauce' | 'main';
@@ -50,4 +92,9 @@ export type TFeedState = {
   totalToday: number;
   isLoading: boolean;
   error: unknown;
+};
+
+export type TProtectedRouteProps = {
+  onlyUnAuth?: boolean;
+  children?: ReactNode;
 };

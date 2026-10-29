@@ -18,6 +18,8 @@ export const RegisterUI = ({
   setPassword,
   userName,
   setUserName,
+  isPasswordValid,
+  setIsPasswordValid,
 }: RegisterUIProps): React.JSX.Element => (
   <main className={styles.container}>
     <div className={`pt-6 ${styles.wrapCenter}`}>
@@ -53,10 +55,16 @@ export const RegisterUI = ({
               onChange={(e) => setPassword(e.target.value)}
               value={password}
               name="password"
+              checkValid={setIsPasswordValid}
             />
           </div>
           <div className={`pb-6 ${styles.button}`}>
-            <Button type="primary" size="medium" htmlType="submit">
+            <Button
+              type="primary"
+              size="medium"
+              htmlType="submit"
+              disabled={isPasswordValid ? false : true}
+            >
               Зарегистрироваться
             </Button>
           </div>

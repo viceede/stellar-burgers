@@ -1,59 +1,105 @@
+import { useProfileForm } from '@/hooks/useProfileForm';
+import { updateUser } from '@/services/slices/userSlice';
+import { useDispatch, useSelector } from '@/services/store';
+import {
+  getUpdatedProfileData,
+  validateProfileForm,
+  type TProfileFormValues,
+} from '@/utils/profileValidation';
 import { ProfileUI } from '@ui-pages';
-import { type SyntheticEvent, useEffect, useState } from 'react';
+import { useEffect, useMemo } from 'react';
+
+import type { FormEvent } from 'react';
 
 export const Profile = (): React.JSX.Element => {
-  /** TODO: Взять переменную из стора */
-  const user = {
-    name: '',
-    email: '',
-  };
+  const dispatch = useDispatch();
 
-  const [formValue, setFormValue] = useState({
-    name: user.name,
-    email: user.email,
-    password: '',
-  });
+  const user = useSelector((state) => state.user.user);
+  const updateUserError = useSelector((state) => state.user.error);
+  const isLoading = useSelector((state) => state.user.isLoading);
 
-  useEffect(() => {
-    setFormValue((prevState) => ({
-      ...prevState,
-      name: user?.name || '',
-      email: user?.email || '',
-    }));
-  }, [user]);
+  const initialValues = useMemo<TProfileFormValues>(
+    () => ({
+      name: user?.name ?? '',
+      email: user?.email ?? '',
+      password: '',
+    }),
+    [user?.name, user?.email]
+  );
+
+  const {
+    formValue,
+    errors,
+    changeField,
+    touchField,
+    markSubmitted,
+    resetForm,
+    clearPassword,
+  } = useProfileForm(initialValues);
+
+  useEffect((): void => {
+    resetForm(initialValues);
+  }, [initialValues, resetForm]);
 
   const isFormChanged =
-    formValue.name !== user?.name ||
-    formValue.email !== user?.email ||
-    !!formValue.password;
+    formValue.name.trim() !== (user?.name ?? '') ||
+    formValue.email.trim() !== (user?.email ?? '') ||
+    formValue.password.length > 0;
 
-  const handleSubmit = (e: SyntheticEvent): void => {
-    e.preventDefault();
+  const handleChange = (field: keyof TProfileFormValues, value: string): void => {
+    changeField(field, value);
   };
 
-  const handleCancel = (e: SyntheticEvent): void => {
-    e.preventDefault();
-    setFormValue({
-      name: user.name,
-      email: user.email,
-      password: '',
-    });
+  const handleBlur = (field: keyof TProfileFormValues): void => {
+    touchField(field);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setFormValue((prevState) => ({
-      ...prevState,
-      [e.target.name]: e.target.value,
-    }));
+  const submitProfile = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
+    event.preventDefault();
+    markSubmitted();
+
+    if (!user || isLoading) {
+      return;
+    }
+
+    const validationErrors = validateProfileForm(formValue);
+
+    if (Object.keys(validationErrors).length > 0) {
+      return;
+    }
+
+    const updatedData = getUpdatedProfileData(formValue, user);
+
+    if (Object.keys(updatedData).length === 0) {
+      return;
+    }
+
+    const result = await dispatch(updateUser(updatedData));
+
+    if (updateUser.fulfilled.match(result)) {
+      clearPassword();
+    }
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
+    void submitProfile(event);
+  };
+
+  const handleCancel = (): void => {
+    resetForm(initialValues);
   };
 
   return (
     <ProfileUI
       formValue={formValue}
+      errors={errors}
+      updateUserError={updateUserError}
+      isLoading={isLoading}
       isFormChanged={isFormChanged}
-      handleCancel={handleCancel}
-      handleSubmit={handleSubmit}
-      handleInputChange={handleInputChange}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      onSubmit={handleSubmit}
+      onCancel={handleCancel}
     />
   );
 };
