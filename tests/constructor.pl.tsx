@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { expect, test, type Page } from '@playwright/test';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ingredientsHar = path.join(__dirname, 'fixtures', 'ingredients.har');
+const ingredientsHar = path.join(__dirname, 'hars', 'ingredients.har');
 
 const bunName = 'Краторная булка N-200i';
 const fillingName = 'Биокотлета из марсианской Магнолии';
