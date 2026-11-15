@@ -4,11 +4,13 @@ import { fileURLToPath } from 'node:url';
 import { expect, test, type Page } from '@playwright/test';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ingredientsHar = path.join(__dirname, 'hars', 'ingredients.har');
+const apiHar = path.join(__dirname, 'hars', 'backend.har');
 
 const bunName = 'Краторная булка N-200i';
 const fillingName = 'Биокотлета из марсианской Магнолии';
 const orderNumber = 12345;
+const bunId = '643d69a5c3f7b9001cfa0941';
+const fillingId = '643d69a5c3f7b9001cfa0945';
 
 const addIngredient = async (page: Page, name: string): Promise<void> => {
   const ingredientCard = page.getByRole('listitem').filter({ hasText: name });
@@ -16,10 +18,10 @@ const addIngredient = async (page: Page, name: string): Promise<void> => {
 };
 
 const openConstructor = async (page: Page): Promise<void> => {
-  await page.routeFromHAR(ingredientsHar, {
-    url: '**/api/ingredients',
-    notFound: 'abort',
+  await page.routeFromHAR(apiHar, {
+    url: '**/api/**',
   });
+
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Соберите бургер' })).toBeVisible();
   await expect(page.getByText(bunName)).toBeVisible();
@@ -41,20 +43,6 @@ const authorizeUser = async (page: Page): Promise<void> => {
   await page.addInitScript(() => {
     window.localStorage.setItem('refreshToken', 'test-refresh-token');
   });
-
-  await page.route('**/api/auth/user', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        success: true,
-        user: {
-          email: 'test@example.com',
-          name: 'Test User',
-        },
-      }),
-    });
-  });
 };
 
 test.describe('Конструктор бургера', () => {
@@ -73,29 +61,33 @@ test.describe('Конструктор бургера', () => {
     await expect(constructor.getByText(fillingName)).toBeVisible();
   });
 
-  test('открывает модальное окно с деталями ингредиента', async ({ page }) => {
+  test('открывает модальное окно с деталями выбранного ингредиента', async ({
+    page,
+  }) => {
     await openConstructor(page);
 
     await page.getByRole('link').filter({ hasText: bunName }).click();
 
+    const ingredientModal = page.getByRole('dialog');
+
+    await expect(ingredientModal).toBeVisible();
     await expect(
-      page.getByRole('heading', { name: 'Детали ингредиента' })
+      ingredientModal.getByRole('heading', { name: 'Детали ингредиента' })
     ).toBeVisible();
-    await expect(page.getByRole('heading', { name: bunName })).toBeVisible();
-    await expect(page.getByText('Калории, ккал')).toBeVisible();
+    await expect(ingredientModal.getByRole('heading', { name: bunName })).toBeVisible();
+    await expect(ingredientModal.getByText('Калории, ккал')).toBeVisible();
   });
 
   test('закрывает модальное окно ингредиента по крестику', async ({ page }) => {
     await openConstructor(page);
 
     await page.getByRole('link').filter({ hasText: bunName }).click();
-    await expect(
-      page.getByRole('heading', { name: 'Детали ингредиента' })
-    ).toBeVisible();
+    const ingredientModal = page.getByRole('dialog');
+    await expect(ingredientModal).toBeVisible();
 
-    await page.getByRole('button', { name: 'Закрыть' }).click();
+    await ingredientModal.getByRole('button', { name: 'Закрыть' }).click();
 
-    await expect(page.getByRole('heading', { name: 'Детали ингредиента' })).toBeHidden();
+    await expect(ingredientModal).toBeHidden();
     await expect(page).toHaveURL('/');
   });
 
@@ -103,15 +95,14 @@ test.describe('Конструктор бургера', () => {
     await openConstructor(page);
 
     await page.getByRole('link').filter({ hasText: bunName }).click();
-    await expect(
-      page.getByRole('heading', { name: 'Детали ингредиента' })
-    ).toBeVisible();
+    const ingredientModal = page.getByRole('dialog');
+    await expect(ingredientModal).toBeVisible();
 
-    await page
-      .locator('[class*="modal-overlay__overlay"]')
-      .click({ position: { x: 5, y: 5 } });
+    await page.getByTestId('modal-overlay').click({
+      position: { x: 5, y: 5 },
+    });
 
-    await expect(page.getByRole('heading', { name: 'Детали ингредиента' })).toBeHidden();
+    await expect(ingredientModal).toBeHidden();
     await expect(page).toHaveURL('/');
   });
 
@@ -123,32 +114,11 @@ test.describe('Конструктор бургера', () => {
     let orderRequestBody: { ingredients: string[] } | undefined;
     let authorizationHeader: string | undefined;
 
-    await page.route('**/api/orders', async (route) => {
-      const request = route.request();
-      orderRequestBody = request.postDataJSON() as { ingredients: string[] };
-      authorizationHeader = request.headers().authorization;
-
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          success: true,
-          name: 'Краторный бургер',
-          order: {
-            _id: 'test-order-id',
-            status: 'done',
-            name: 'Краторный бургер',
-            createdAt: '2026-11-15T08:00:00.000Z',
-            updatedAt: '2026-11-15T08:00:00.000Z',
-            number: orderNumber,
-            ingredients: [
-              '643d69a5c3f7b9001cfa0941',
-              '643d69a5c3f7b9001cfa0945',
-              '643d69a5c3f7b9001cfa0941',
-            ],
-          },
-        }),
-      });
+    page.on('request', (request) => {
+      if (request.url().endsWith('/api/orders') && request.method() === 'POST') {
+        orderRequestBody = request.postDataJSON() as { ingredients: string[] };
+        authorizationHeader = request.headers().authorization;
+      }
     });
 
     await openConstructor(page);
@@ -158,15 +128,14 @@ test.describe('Конструктор бургера', () => {
     await addIngredient(page, fillingName);
     await page.getByRole('button', { name: 'Оформить заказ' }).click();
 
-    await expect(page.getByText(String(orderNumber))).toBeVisible();
-    await expect(page.getByText('идентификатор заказа')).toBeVisible();
-    await expect(page.getByText('Ваш заказ начали готовить')).toBeVisible();
+    const orderModal = page.getByRole('dialog');
 
-    expect(orderRequestBody?.ingredients).toEqual([
-      '643d69a5c3f7b9001cfa0941',
-      '643d69a5c3f7b9001cfa0945',
-      '643d69a5c3f7b9001cfa0941',
-    ]);
+    await expect(orderModal).toBeVisible();
+    await expect(orderModal.getByText(String(orderNumber))).toBeVisible();
+    await expect(orderModal.getByText('идентификатор заказа')).toBeVisible();
+    await expect(orderModal.getByText('Ваш заказ начали готовить')).toBeVisible();
+
+    expect(orderRequestBody?.ingredients).toEqual([bunId, fillingId, bunId]);
     expect(authorizationHeader).toBe('Bearer test-access-token');
 
     const constructor = page.locator('section').filter({
@@ -175,9 +144,8 @@ test.describe('Конструктор бургера', () => {
     await expect(constructor.getByText('Выберите булки')).toHaveCount(2);
     await expect(constructor.getByText('Выберите начинку')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Закрыть' }).click();
+    await orderModal.getByRole('button', { name: 'Закрыть' }).click();
 
-    await expect(page.getByText(String(orderNumber))).toBeHidden();
-    await expect(page.getByText('идентификатор заказа')).toBeHidden();
+    await expect(orderModal).toBeHidden();
   });
 });
